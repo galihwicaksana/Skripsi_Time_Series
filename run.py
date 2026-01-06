@@ -24,8 +24,8 @@ if __name__ == '__main__':
                         help='task name, options:[long_term_forecast, short_term_forecast, imputation, classification, anomaly_detection]')
     parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
     parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='Autoformer',
-                        help='model name, options: [Autoformer, Transformer, TimesNet]')
+    parser.add_argument('--model', type=str, required=True, default='TimeMixer',
+                        help='model name, options: [TimeMixer, TimesNet, Transformer, LSTM, TimeMixer_RAF]')
 
     # data loader
     parser.add_argument('--data', type=str, required=True, default='ETTh1', help='dataset type')
@@ -52,8 +52,8 @@ if __name__ == '__main__':
     parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%%)')
 
     # model define
-    parser.add_argument('--expand', type=int, default=2, help='expansion factor for Mamba')
-    parser.add_argument('--d_conv', type=int, default=4, help='conv kernel size for Mamba')
+    parser.add_argument('--expand', type=int, default=2, help='expansion factor')
+    parser.add_argument('--d_conv', type=int, default=4, help='conv kernel size')
     parser.add_argument('--top_k', type=int, default=5, help='for TimesBlock')
     parser.add_argument('--num_kernels', type=int, default=6, help='for Inception')
     parser.add_argument('--enc_in', type=int, default=7, help='encoder input size')
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                         help='time features encoding, options:[timeF, fixed, learned]')
     parser.add_argument('--activation', type=str, default='gelu', help='activation')
     parser.add_argument('--channel_independence', type=int, default=1,
-                        help='0: channel dependence 1: channel independence for FreTS model')
+                        help='0: channel dependence 1: channel independence')
     parser.add_argument('--decomp_method', type=str, default='moving_avg',
                         help='method of series decompsition, only support moving_avg or dft_decomp')
     parser.add_argument('--use_norm', type=int, default=1, help='whether to use normalize; True 1 False 0')
@@ -83,7 +83,18 @@ if __name__ == '__main__':
     parser.add_argument('--down_sampling_method', type=str, default=None,
                         help='down sampling method, only support avg, max, conv')
     parser.add_argument('--seg_len', type=int, default=96,
-                        help='the length of segmen-wise iteration of SegRNN')
+                        help='the length of segment-wise iteration')
+
+    # RAF (Retrieval Augmented Forecasting) specific parameters
+    parser.add_argument('--use_raf', type=int, default=0, help='whether to use RAF; True 1 False 0')
+    parser.add_argument('--raf_top_k', type=int, default=5, help='number of retrieved patterns for RAF')
+    parser.add_argument('--raf_d_embed', type=int, default=128, help='embedding dimension for RAF retrieval')
+    parser.add_argument('--raf_fusion_method', type=str, default='attention', 
+                        help='fusion method for RAF, options:[attention, gating, weighted]')
+    parser.add_argument('--raf_similarity_metric', type=str, default='cosine',
+                        help='similarity metric for RAF, options:[cosine, euclidean]')
+    parser.add_argument('--kb_path', type=str, default='./checkpoints/knowledge_bases/kb.pkl',
+                        help='path to knowledge base file for RAF')
 
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
@@ -137,7 +148,7 @@ if __name__ == '__main__':
                         help="Discrimitive shapeDTW warp preset augmentation")
     parser.add_argument('--extra_tag', type=str, default="", help="Anything extra")
 
-    # TimeXer
+    # patch settings
     parser.add_argument('--patch_len', type=int, default=16, help='patch length')
 
     args = parser.parse_args()

@@ -7,9 +7,9 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
 from utils.timefeatures import time_features
-from data_provider.m4 import M4Dataset, M4Meta
+# from data_provider.m4 import M4Dataset, M4Meta  # Temporary comment - patoolib issue
 from data_provider.uea import subsample, interpolate_missing, Normalizer
-from sktime.datasets import load_from_tsfile_to_dataframe
+# from sktime.datasets import load_from_tsfile_to_dataframe  # Temporary comment - sktime compatibility issue
 import warnings
 from utils.augmentation import run_augmentation_single
 
@@ -681,8 +681,10 @@ class UEAloader(Dataset):
         return all_df, labels_df
 
     def load_single(self, filepath):
-        df, labels = load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
-                                                             replace_missing_vals_with='NaN')
+        # Temporarily disabled due to sktime compatibility issues
+        raise NotImplementedError("UEA dataset loading is temporarily disabled. Use ETT datasets instead.")
+        # df, labels = load_from_tsfile_to_dataframe(filepath, return_separate_X_and_y=True,
+        #                                                      replace_missing_vals_with='NaN')
         labels = pd.Series(labels, dtype="category")
         self.class_names = labels.cat.categories
         labels_df = pd.DataFrame(labels.cat.codes,

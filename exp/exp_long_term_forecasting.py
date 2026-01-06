@@ -22,6 +22,36 @@ class Exp_Long_Term_Forecast(Exp_Basic):
     def _build_model(self):
         model = self.model_dict[self.args.model].Model(self.args).float()
 
+        # Load knowledge base for RAF models
+        if hasattr(self.args, 'use_raf') and self.args.use_raf and hasattr(model, 'set_knowledge_base'):
+            kb_path = getattr(self.args, 'kb_path', './checkpoints/knowledge_bases/kb.pkl')
+            if os.path.exists(kb_path):
+                print(f"Loading knowledge base from {kb_path}...")
+                import pickle
+                with open(kb_path, 'rb') as f:
+                    kb_data = pickle.load(f)
+                
+                print("Converting KB to tensors (keeping on CPU to save GPU memory)...")
+                # Convert to tensors but keep on CPU initially
+                kb_embeddings = torch.stack(kb_data['embeddings']).float()
+                kb_features = torch.stack(kb_data['features']).float()
+                kb_targets = torch.stack(kb_data['targets']).float()
+                
+                print(f"KB loaded: {kb_embeddings.shape[0]} patterns")
+                print(f"KB sizes - Embeddings: {kb_embeddings.shape}, Features: {kb_features.shape}, Targets: {kb_targets.shape}")
+                
+                # Move to GPU only the embeddings (small), features and targets stay on CPU
+                # They will be moved to GPU in smaller batches during retrieval
+                print("Moving KB embeddings to GPU (features/targets stay on CPU for memory efficiency)...")
+                kb_embeddings_gpu = kb_embeddings.to(self.device)
+                
+                # Keep features and targets on CPU
+                model.set_knowledge_base(kb_embeddings_gpu, kb_features, kb_targets)
+                print(f"Knowledge base configured successfully!")
+            else:
+                print(f"Warning: Knowledge base not found at {kb_path}")
+                print("RAF will run without retrieval (equivalent to baseline)")
+
         if self.args.use_multi_gpu and self.args.use_gpu:
             model = nn.DataParallel(model, device_ids=self.args.device_ids)
         return model
@@ -216,6 +246,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
                 preds.append(pred)
                 trues.append(true)
+                
+                # Clear cache periodically during validation to prevent OOM with large KB
+                if i % 10 == 0 and torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                
                 if i % 20 == 0:
                     input = batch_x.detach().cpu().numpy()
                     if test_data.scale and self.args.inverse:
