@@ -25,7 +25,7 @@ d_model=32
 d_ff=64
 train_epochs=10
 patience=10
-batch_size=8
+batch_size=128
 
 # RAF-specific hyperparameters - OPTIMIZED for 862 features
 use_raf=1

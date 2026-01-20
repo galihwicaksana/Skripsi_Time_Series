@@ -5,7 +5,7 @@ source /mnt/extended-home/galih/miniconda3/bin/activate timeMixer
 cd /mnt/extended-home/galih/Time-Series-Library
 export PYTHONPATH="/mnt/extended-home/galih/Time-Series-Library:$PYTHONPATH"
 
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=1
 
 model_name=TimeMixer
 root_path=./dataset/ETT-small/

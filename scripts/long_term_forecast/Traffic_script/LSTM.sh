@@ -7,23 +7,15 @@ export PYTHONPATH="/mnt/extended-home/galih/Time-Series-Library:$PYTHONPATH"
 export CUDA_VISIBLE_DEVICES=0
 
 model_name=LSTM
-root_path=./dataset/traffic/
-data_path=traffic.csv
-data=custom
-features=M
-e_layers=3
+
+e_layers=2
 d_layers=1
-enc_in=862
-dec_in=862
-c_out=862
-d_model=100
-d_ff=32
-des='Exp'
-itr=1
-batch_size=8
+d_model=32
+d_ff=16
 learning_rate=0.01
 train_epochs=10
 patience=10
+batch_size=8
 
 log_file="long_term_forecast_LSTM_traffic_results.log"
 echo "Training Results - LSTM Baseline (Traffic)" > $log_file
@@ -51,30 +43,29 @@ for seq_len in 48 96 168 336; do
     python -u run.py \
       --task_name long_term_forecast \
       --is_training 1 \
-      --root_path $root_path \
-      --data_path $data_path \
+      --root_path ./dataset/traffic/ \
+      --data_path traffic.csv \
       --model_id $model_id \
       --model $model_name \
-      --gpu 0 \
-      --data $data \
-      --features $features \
+      --data custom \
+      --features M \
       --seq_len $seq_len \
       --label_len $label_len \
       --pred_len $pred_len \
       --e_layers $e_layers \
       --d_layers $d_layers \
-      --enc_in $enc_in \
-      --dec_in $dec_in \
-      --c_out $c_out \
+      --enc_in 862 \
+      --dec_in 862 \
+      --c_out 862 \
+      --des 'Exp' \
+      --itr 1 \
       --d_model $d_model \
       --d_ff $d_ff \
       --dropout 0.2 \
-      --batch_size $batch_size \
       --learning_rate $learning_rate \
       --train_epochs $train_epochs \
       --patience $patience \
-      --des $des \
-      --itr $itr | tee -a $log_file
+      --batch_size $batch_size | tee -a $log_file
 
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Completed: seq_len=$seq_len, label_len=$label_len, pred_len=$pred_len" | tee -a $log_file
     echo "========================================" >> $log_file

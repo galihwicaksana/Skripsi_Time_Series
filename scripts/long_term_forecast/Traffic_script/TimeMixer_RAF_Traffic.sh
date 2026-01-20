@@ -18,7 +18,7 @@ d_model=32  # Larger for more features
 d_ff=64     # Larger for more features
 train_epochs=10
 patience=10
-batch_size=8  # Match baseline (Traffic has 862 features)
+batch_size=128  # Match baseline (Traffic has 862 features)
 
 # RAF-specific hyperparameters (OPTIMIZED)
 use_raf=1

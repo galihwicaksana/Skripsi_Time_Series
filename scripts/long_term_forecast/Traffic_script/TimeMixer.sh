@@ -4,7 +4,8 @@ source /mnt/extended-home/galih/miniconda3/bin/activate timeMixer
 cd /mnt/extended-home/galih/Time-Series-Library
 export PYTHONPATH="/mnt/extended-home/galih/Time-Series-Library:$PYTHONPATH"
 
-export CUDA_VISIBLE_DEVICES=2
+# Use GPU 0 (35GB free - optimized for traffic dataset)
+export CUDA_VISIBLE_DEVICES=0
 
 model_name=TimeMixer
 
@@ -12,8 +13,9 @@ e_layers=2
 down_sampling_layers=3
 down_sampling_window=2
 learning_rate=0.01
+# Optimized parameters for fair comparison (prevent OOM)
 d_model=32
-d_ff=64
+d_ff=64 
 train_epochs=10
 patience=10
 batch_size=8
